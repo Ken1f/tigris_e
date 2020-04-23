@@ -7,9 +7,16 @@ import (
 
 const XMAX = 16
 const YMAX = 11
-const MAXTILES = 153
+const BLACK = 0
+const BLUE  = 1
+const GREEN = 2
+const RED   = 3
+const MAXBLACK = 30
+const MAXBLUE  = 36
+const MAXGREEN = 30
+const MAXRED   = 57
+const MAXTILES = MAXBLACK + MAXBLUE + MAXGREEN + MAXRED
 const MAXCOLOR = 4
-const MAXCOLORTILES = MAXTILES / MAXCOLOR
 const EMPTY = 0
 
 var TILE map[string]int
@@ -52,6 +59,7 @@ func init() {
 type Player struct {
 	tiles [5]int
 	leader [4]int
+	points [4]int
 }
 
 func (p *Player) AddTile(thisTile int) {
@@ -76,6 +84,10 @@ func (p *Player) Init(b *Bag, playerNum int) { // randomized 5 tiles
 	}
 }
 
+func (p *Player) AddPoint(thisTile int) {
+	(*p).points[(thisTile-1) % MAXCOLOR]++
+}
+
 type Tile struct {
 	// 4 types of tiles. black, red, blue, green
 	tile int
@@ -87,14 +99,19 @@ type Bag struct {
 }
 
 func (b *Bag) Init() {
-	for i := 0; i < MAXCOLOR; i++ {
-		b.tiles[i] = MAXCOLORTILES
-	}
+	b.tiles[BLACK] = MAXBLACK
+	b.tiles[BLUE]  = MAXBLUE
+	b.tiles[GREEN] = MAXGREEN
+	b.tiles[RED]   = MAXRED
+
 	b.total = MAXTILES
 }
 
 func (b *Bag) DrawTile() int {
-	color := rand.Intn(MAXCOLOR)
+	color := rand.Intn(MAXCOLOR+1)
+	if color > RED { // red can represent 3 or 4 since it has 2x the amount of black, blue, or green
+		color = RED
+	}
 
 	if b.tiles[color] == TILE["EMPTY"] && b.total != TILE["EMPTY"] { // if one of the colors is empty, check other color
 		for color := rand.Intn(MAXCOLOR); b.tiles[color] != TILE["EMPTY"]; { // repeat until found non-empty color
@@ -103,6 +120,10 @@ func (b *Bag) DrawTile() int {
 	b.tiles[color]--
 	b.total--
 	return color
+}
+
+func (b Bag) RemainingTile() int {
+	return b.total
 }
 
 type Board struct {
@@ -157,6 +178,34 @@ func (b *Board) PlaceTile(thisTile, x, y int) bool {
 	}
 
 	return canPlaceTile
+}
+
+func (b *Board) RemoveTile(x, y int) {	// TODO: remove LEADER then add to PLAYER
+	switch (*b).board[y][x] {
+		case TILE["P1BLUE"], TILE["P2BLUE"], TILE["P3BLUE"], TILE["P4BLUE"]:	// remove farmer tile, replace with river
+			(*b).board[y][x] = TILE["RIVER"]
+		default:																// remove normal tile, replace with empty 
+			(*b).board[y][x] = TILE["EMPTY"]
+		}
+}
+
+func (b Board) IsLeaderPlaceable(x, y int) bool {
+	for j := -1; j < 2; j++ {	// assuming center is empty :-)
+		for i := -1; i < 2; i++ {
+			if inBound(x+i, y+j) && b.board[y+j][x+i] == TILE["RED"] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func inBound(x, y int) bool {
+	if x >= 0 && x < XMAX && y >= 0 && y < YMAX {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (b Board) Print() { // 16 wide x 11 height
@@ -243,5 +292,6 @@ func main() {
 	p("player init")
 	p1.Init(&bag, 1)
 	p2.Init(&bag, 2)
-	// b.Print()
+
+	// board.Print()
 }
