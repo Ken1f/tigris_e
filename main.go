@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"bufio"
+	"os"
+	"strings"
 )
 
 const XMAX = 16
@@ -90,7 +93,7 @@ func inBound(x, y int) bool {
 	}
 }
 
-func p(s string) {
+func pr(s string) {
 	fmt.Printf(s + "\n")
 }
 
@@ -114,7 +117,7 @@ func PrintTile(thisTile int) {
 	case TILE["P1BLACK"]:
 		fmt.Printf(COLORBLACK, "1")
 	case TILE["P1BLUE"]:
-		fmt.Printf(COLORMAGENTA, "1")
+		fmt.Printf(COLORBLUE, "1")
 
 	case TILE["P2RED"]:
 		fmt.Printf(COLORRED, "2")
@@ -123,7 +126,7 @@ func PrintTile(thisTile int) {
 	case TILE["P2BLACK"]:
 		fmt.Printf(COLORBLACK, "2")
 	case TILE["P2BLUE"]:
-		fmt.Printf(COLORMAGENTA, "2")
+		fmt.Printf(COLORBLUE, "2")
 
 	case TILE["P3RED"]:
 		fmt.Printf(COLORRED, "3")
@@ -132,7 +135,7 @@ func PrintTile(thisTile int) {
 	case TILE["P3BLACK"]:
 		fmt.Printf(COLORBLACK, "3")
 	case TILE["P3BLUE"]:
-		fmt.Printf(COLORMAGENTA, "3")
+		fmt.Printf(COLORBLUE, "3")
 
 	case TILE["P4RED"]:
 		fmt.Printf(COLORRED, "4")
@@ -141,41 +144,60 @@ func PrintTile(thisTile int) {
 	case TILE["P4BLACK"]:
 		fmt.Printf(COLORBLACK, "4")
 	case TILE["P4BLUE"]:
-		fmt.Printf(COLORMAGENTA, "4")
+		fmt.Printf(COLORBLUE, "4")
 
 	case TILE["RIVER"]:
 		fmt.Printf(COLORBLUE, "R")
 	case TILE["WAR"]:
-		fmt.Printf("W")
+		fmt.Printf(COLORMAGENTA, "W")
 	case TILE["GOLD"]:
 		fmt.Printf("O")
 	case TILE["CASTROPHE"]:
-		fmt.Printf("C")
+		fmt.Printf(COLORWHITE, "C")
 	default:
 		fmt.Printf("error")
+	}
+}
+
+func printGame(p[4] Player, board Board, bag Bag) {	// TODO Number of Player should be dynamic
+	for i, _ := range p {
+		p[i].Print()
+	}
+	board.Print()
+	fmt.Print("Remaining Tile ", bag.RemainingTile(), "\n")
+}
+
+func readInput() {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan() 
+	line := scanner.Text()
+	for _, x := range strings.Fields(line) {
+		fmt.Println("next field", x)
 	}
 }
 
 func main() {
 	fmt.Printf("Hello Tigris & Euphrates\n")
 
-	var p1, p2, p3, p4 Player
+	var p[4] Player
 	var board Board
 	var bag Bag
-	p("board init")
+	pr("board init")
 	board.Init(MAPSTANDARD)
-	p("bag init")
+	pr("bag init")
 	bag.Init()
-	fmt.Print("Starting Tile ",bag.RemainingTile(),"\n")
-	p("player init")
-	p1.Init(&bag, PLAYER1)
-	p1.Print()
-	p2.Init(&bag, PLAYER2)
-	p2.Print()
-	p3.Init(&bag, PLAYER3)
-	p3.Print()
-	p4.Init(&bag, PLAYER4)
-	p4.Print()
-	fmt.Print("Remaining Tile ",bag.RemainingTile(),"\n")
-	board.Print()
+	fmt.Print("Starting Tile ", bag.RemainingTile(), "\n")
+	pr("player init")
+	p[0].Init(PLAYER1, bag.DrawTiles(5))
+	p[1].Init(PLAYER1, bag.DrawTiles(5))
+	p[2].Init(PLAYER1, bag.DrawTiles(5))
+	p[3].Init(PLAYER1, bag.DrawTiles(5))
+	printGame(p, board, bag)
+
+	swap := []int {0,1,2} //
+	p[0].SwapTiles(bag.DrawTiles(len(swap)), swap)
+	swap = []int {0,1,2,3,4} //
+	p[1].SwapTiles(bag.DrawTiles(len(swap)), swap)
+	//readInput()
+	printGame(p, board, bag)
 }

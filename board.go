@@ -158,7 +158,13 @@ func (b Board) IsLeaderPlaceable(x, y int) bool {
 }
 
 func (b Board) Print() { // 16 wide x 11 height
+	fmt.Printf("  ")
+	for i := 0 ; i < XMAX; i++ {
+		fmt.Printf("%2c", i+65)	// print character from unicode
+	}
+	fmt.Printf("\n")
 	for j := 0; j < YMAX; j++ {
+		fmt.Printf("%2d ", j+1)
 		for i := 0; i < XMAX; i++ {
 			PrintTile(b.board[j][i])
 			fmt.Printf(" ")

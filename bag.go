@@ -18,7 +18,7 @@ func (b *Bag) Init() {
 	b.total = MAXTILES
 }
 
-func (b *Bag) DrawTile() int {
+func (b *Bag) DrawTile() int {			// draw 1 tile
 	color := rand.Intn(MAXCOLOR + 1)
 	if color > RED { // red can represent 3 or 4 since it has 2x the amount of black, blue, or green
 		color = RED
@@ -31,6 +31,15 @@ func (b *Bag) DrawTile() int {
 	b.tiles[color]--
 	b.total--
 	return color
+}
+
+func (b *Bag) DrawTiles(numTile int) []int {	// draw multiple tiles
+	var tiles[] int
+	
+	for i := 0; i< numTile ; i++ {
+		tiles = append(tiles, (*b).DrawTile())
+	}
+	return tiles
 }
 
 func (b Bag) RemainingTile() int {
