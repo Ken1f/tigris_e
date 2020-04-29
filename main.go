@@ -37,6 +37,7 @@ const (
 const (
 	MAPSTANDARD = iota
 	MAPADVANCE
+	MAPTEST
 )
 
 const (
@@ -159,7 +160,7 @@ func PrintTile(thisTile int) {
 	}
 }
 
-func printGame(p[4] Player, board Board, bag Bag) {	// TODO Number of Player should be dynamic
+func printGame(p []Player, board Board, bag Bag) {	// NOTE: P is a slice. Not pointer
 	for i, _ := range p {
 		p[i].Print()
 	}
@@ -192,12 +193,14 @@ func main() {
 	p[1].Init(PLAYER1, bag.DrawTiles(5))
 	p[2].Init(PLAYER1, bag.DrawTiles(5))
 	p[3].Init(PLAYER1, bag.DrawTiles(5))
-	printGame(p, board, bag)
+	printGame(p[:], board, bag)
 
 	swap := []int {0,1,2} //
 	p[0].SwapTiles(bag.DrawTiles(len(swap)), swap)
 	swap = []int {0,1,2,3,4} //
 	p[1].SwapTiles(bag.DrawTiles(len(swap)), swap)
 	//readInput()
-	printGame(p, board, bag)
+	printGame(p[:], board, bag)
+	board.Init(MAPTEST)
+	fmt.Print("Connected tile total ",board.GetTileTotal(1,1,TILE["RED"]))
 }

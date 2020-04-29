@@ -11,8 +11,10 @@ type Board struct {
 func (b *Board) Init(mapchoice int) {
 	if mapchoice == MAPSTANDARD {
 		(*b).InitMapStandard()
-	} else {
+	} else if mapchoice == MAPADVANCE {
 		(*b).InitMapAdvance()
+	} else {
+		(*b).InitMapTest()
 	}
 }
 
@@ -81,6 +83,18 @@ func (b *Board) InitMapAdvance() { // TODO advance map. unfinished
 			(*b).board[j][i] = TILE["EMPTY"]
 		}
 	}
+}
+
+func (b *Board) InitMapTest() { // Map for test
+	(*b).SetTemple(0, 0)
+	(*b).SetTemple(0, 1)
+	(*b).SetTemple(0, 2)
+	(*b).SetTemple(1, 0)
+	(*b).SetTemple(1, 1)
+	(*b).SetTemple(1, 2)
+	(*b).SetTemple(2, 0)
+	(*b).SetTemple(2, 1)
+	(*b).SetTemple(2, 2)
 }
 
 func (b *Board) SetEmpty(x, y int) {
@@ -155,6 +169,31 @@ func (b Board) IsLeaderPlaceable(x, y int) bool {
 		}
 	}
 	return false
+}
+
+func (b Board) GetTileTotal(x, y, thisTile int) int {	// Get tile total using Flood Fill function
+	var mark[YMAX][XMAX] bool
+
+	total := 0;
+	b.FloodFill(x, y, thisTile, mark, &total)
+
+	return total
+}
+
+func (b Board) FloodFill(x, y, thisTile int, mark[YMAX][XMAX] bool, total *int) {
+	if !inBound(x,y) {	// quit function if not in bound
+		return
+	}
+
+	if b.board[y][x] == thisTile && mark[y][x] == false {
+		mark[y][x] = true
+		(*total)++
+		
+		b.FloodFill(x,y+1, thisTile, mark, total) // up
+		b.FloodFill(x+1,y, thisTile, mark, total) // right
+		b.FloodFill(x,y-1, thisTile, mark, total) // down
+		b.FloodFill(x-1,y, thisTile, mark, total) // left
+	} 
 }
 
 func (b Board) Print() { // 16 wide x 11 height
