@@ -160,12 +160,24 @@ func PrintTile(thisTile int) {
 	}
 }
 
-func printGame(p []Player, board Board, bag Bag) {	// NOTE: P is a slice. Not pointer
+func printGame(p []Player, board Board, bag Bag) {	// NOTE: P[] is a slice. Not pointer
 	for i, _ := range p {
 		p[i].Print()
 	}
 	board.Print()
 	fmt.Print("Remaining Tile ", bag.RemainingTile(), "\n")
+}
+
+func printKingdomInfo(kingdomInfo[] int) {
+	fmt.Print("Kingdom info:")
+	fmt.Printf(COLORBLACK, " BLACK:")
+	fmt.Print(kingdomInfo[BLACK])
+	fmt.Printf(COLORBLUE, " BLUE:")
+	fmt.Print(kingdomInfo[BLUE])
+	fmt.Printf(COLORGREEN, " GREEN:")
+	fmt.Print(kingdomInfo[GREEN])
+	fmt.Printf(COLORRED, " RED:")
+	fmt.Print(kingdomInfo[RED])
 }
 
 func readInput() {
@@ -200,7 +212,9 @@ func main() {
 	swap = []int {0,1,2,3,4} //
 	p[1].SwapTiles(bag.DrawTiles(len(swap)), swap)
 	//readInput()
-	printGame(p[:], board, bag)
 	board.Init(MAPTEST)
-	fmt.Print("Connected tile total ",board.GetTileTotal(1,1,TILE["RED"]))
+	printGame(p[:], board, bag)
+
+	kingdomInfo := board.GetKingdomInfo(1,1)
+	printKingdomInfo(kingdomInfo)
 }

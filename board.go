@@ -90,11 +90,26 @@ func (b *Board) InitMapTest() { // Map for test
 	(*b).SetTemple(0, 1)
 	(*b).SetTemple(0, 2)
 	(*b).SetTemple(1, 0)
-	(*b).SetTemple(1, 1)
 	(*b).SetTemple(1, 2)
 	(*b).SetTemple(2, 0)
 	(*b).SetTemple(2, 1)
 	(*b).SetTemple(2, 2)
+	(*b).SetTemple(3, 0)
+
+
+	(*b).SetFarm(2, 3)
+	(*b).SetTemple(2, 4)
+	(*b).SetMarket(1, 4)
+	(*b).SetMarket(3, 4)
+	(*b).SetMarket(4, 4)
+	(*b).SetSettlement(5,4)
+	(*b).SetSettlement(6,4)
+
+	(*b).SetTile(3, 1, TILE["P1RED"])
+}
+
+func (b *Board) SetTile(x, y, thisTile int) {
+		(*b).board[y][x] = thisTile
 }
 
 func (b *Board) SetEmpty(x, y int) {
@@ -105,9 +120,22 @@ func (b *Board) SetRiver(x, y int) {
 	(*b).board[y][x] = TILE["RIVER"]
 }
 
+func (b *Board) SetFarm(x, y int) {
+	(*b).board[y][x] = TILE["BLUE"]
+}
+
 func (b *Board) SetTemple(x, y int) {
 	(*b).board[y][x] = TILE["RED"]
 }
+
+func (b *Board) SetMarket(x, y int) {
+	(*b).board[y][x] = TILE["GREEN"]
+}
+
+func (b *Board) SetSettlement(x, y int) {
+	(*b).board[y][x] = TILE["BLACK"]
+}
+
 
 func (b *Board) IsEmpty(x, y int) bool {
 	if (*b).board[y][x] == TILE["EMPTY"] {
@@ -121,6 +149,15 @@ func (b *Board) IsRiver(x, y int) bool {
 	if (*b).board[y][x] == TILE["RIVER"] {
 		return true
 	} else {
+		return false
+	}
+}
+
+func (b *Board) IsNeutralTile(x, y int) bool {
+	switch (*b).board[y][x] {
+		case TILE["BLACK"], TILE["BLUE"], TILE["GREEN"], TILE["RED"]:
+			return true
+	default:
 		return false
 	}
 }
@@ -171,35 +208,52 @@ func (b Board) IsLeaderPlaceable(x, y int) bool {
 	return false
 }
 
-func (b Board) GetTileTotal(x, y, thisTile int) int {	// Get tile total using Flood Fill function
-	var mark[YMAX][XMAX] bool
+func (b Board) GetKingdomInfo(x, y int) []int {	// Get tile total using Flood Fill function
+	var mark[][] bool
+	var total[] int
 
-	total := 0;
-	b.FloodFill(x, y, thisTile, mark, &total)
+	mark = make([][] bool, YMAX)	// allocating memory for slice of 2D array
+	for j := range mark {
+		mark[j] = make([]bool, XMAX)
+	}
+
+	total = make([] int, MAXCOLOR)	// allocating memory for array size 4
+
+	b.FloodFill(x, y, mark, total)
 
 	return total
 }
 
-func (b Board) FloodFill(x, y, thisTile int, mark[YMAX][XMAX] bool, total *int) {
+func (b Board) FloodFill(x, y int, mark[][] bool, total []int) {
 	if !inBound(x,y) {	// quit function if not in bound
 		return
 	}
 
-	if b.board[y][x] == thisTile && mark[y][x] == false {
+	if (b.IsNeutralTile(x, y) || b.IsLeader(x, y)) && mark[y][x] == false {	// check connecting neutral & leader tile
 		mark[y][x] = true
-		(*total)++
-		
-		b.FloodFill(x,y+1, thisTile, mark, total) // up
-		b.FloodFill(x+1,y, thisTile, mark, total) // right
-		b.FloodFill(x,y-1, thisTile, mark, total) // down
-		b.FloodFill(x-1,y, thisTile, mark, total) // left
+
+		switch b.board[y][x] {
+			case TILE["BLACK"]: 
+				total[BLACK]++
+			case TILE["BLUE"]:			
+				total[BLUE]++
+			case TILE["GREEN"]:
+				total[GREEN]++
+			case TILE["RED"]:
+				total[RED]++
+		}
+
+		b.FloodFill(x,y+1, mark, total) // up
+		b.FloodFill(x+1,y, mark, total) // right
+		b.FloodFill(x,y-1, mark, total) // down
+		b.FloodFill(x-1,y, mark, total) // left
 	} 
 }
 
 func (b Board) Print() { // 16 wide x 11 height
 	fmt.Printf("  ")
 	for i := 0 ; i < XMAX; i++ {
-		fmt.Printf("%2c", i+65)	// print character from unicode
+		fmt.Printf("%2c", i+65)	// print Alphabet character from unicode
 	}
 	fmt.Printf("\n")
 	for j := 0; j < YMAX; j++ {
