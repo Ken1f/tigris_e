@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -15,6 +15,7 @@ const MAXGREEN = 30
 const MAXRED = 57
 const MAXTILES = MAXBLACK + MAXBLUE + MAXGREEN + MAXRED
 const MAXCOLOR = 4
+const EMPTY = 0
 
 const (
 	BLACK = iota
@@ -160,7 +161,7 @@ func PrintTile(thisTile int) {
 	}
 }
 
-func printGame(p []Player, board Board, bag Bag) {	// NOTE: P[] is a slice. Not pointer
+func printGame(p []Player, board Board, bag Bag) { // NOTE: P[] is a slice. Not pointer
 	for i, _ := range p {
 		p[i].Print()
 	}
@@ -168,21 +169,46 @@ func printGame(p []Player, board Board, bag Bag) {	// NOTE: P[] is a slice. Not 
 	fmt.Print("Remaining Tile ", bag.RemainingTile(), "\n")
 }
 
-func printKingdomInfo(kingdomInfo[] int) {
+func printKingdomInfo(k KingdomInfo) {
+	color := ""
 	fmt.Print("Kingdom info:")
 	fmt.Printf(COLORBLACK, " BLACK:")
-	fmt.Print(kingdomInfo[BLACK])
+	fmt.Print(k.tileTotal[BLACK])
 	fmt.Printf(COLORBLUE, " BLUE:")
-	fmt.Print(kingdomInfo[BLUE])
+	fmt.Print(k.tileTotal[BLUE])
 	fmt.Printf(COLORGREEN, " GREEN:")
-	fmt.Print(kingdomInfo[GREEN])
+	fmt.Print(k.tileTotal[GREEN])
 	fmt.Printf(COLORRED, " RED:")
-	fmt.Print(kingdomInfo[RED])
+	fmt.Print(k.tileTotal[RED])
+	for i, leader := range k.leader {
+		switch i {
+		case 0:
+			color = COLORBLACK
+		case 1:
+			color = COLORBLUE
+		case 2:
+			color = COLORGREEN
+		case 3:
+			color = COLORRED
+		}
+		if leader != EMPTY {
+			switch leader {
+			case PLAYER1 + 1:
+				fmt.Printf(color, " P1 ")
+			case PLAYER2 + 1:
+				fmt.Printf(color, " P2 ")
+			case PLAYER3 + 1:
+				fmt.Printf(color, " P3 ")
+			case PLAYER4 + 1:
+				fmt.Printf(color, " P4 ")
+			}
+		}
+	}
 }
 
 func readInput() {
 	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan() 
+	scanner.Scan()
 	line := scanner.Text()
 	for _, x := range strings.Fields(line) {
 		fmt.Println("next field", x)
@@ -192,7 +218,7 @@ func readInput() {
 func main() {
 	fmt.Printf("Hello Tigris & Euphrates\n")
 
-	var p[4] Player
+	var p [4]Player
 	var board Board
 	var bag Bag
 	pr("board init")
@@ -207,14 +233,14 @@ func main() {
 	p[3].Init(PLAYER1, bag.DrawTiles(5))
 	printGame(p[:], board, bag)
 
-	swap := []int {0,1,2} //
+	swap := []int{0, 1, 2} //
 	p[0].SwapTiles(bag.DrawTiles(len(swap)), swap)
-	swap = []int {0,1,2,3,4} //
+	swap = []int{0, 1, 2, 3, 4} //
 	p[1].SwapTiles(bag.DrawTiles(len(swap)), swap)
 	//readInput()
 	board.Init(MAPTEST)
 	printGame(p[:], board, bag)
 
-	kingdomInfo := board.GetKingdomInfo(1,1)
+	kingdomInfo := board.GetKingdomInfo(1, 1)
 	printKingdomInfo(kingdomInfo)
 }

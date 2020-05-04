@@ -8,6 +8,11 @@ type Board struct {
 	board [YMAX][XMAX]int
 }
 
+type KingdomInfo struct {
+	tileTotal [4]int
+	leader    [4]int // empty (0), black (1), blue (2), green (3), red (4)
+}
+
 func (b *Board) Init(mapchoice int) {
 	if mapchoice == MAPSTANDARD {
 		(*b).InitMapStandard()
@@ -96,20 +101,20 @@ func (b *Board) InitMapTest() { // Map for test
 	(*b).SetTemple(2, 2)
 	(*b).SetTemple(3, 0)
 
-
 	(*b).SetFarm(2, 3)
 	(*b).SetTemple(2, 4)
 	(*b).SetMarket(1, 4)
 	(*b).SetMarket(3, 4)
 	(*b).SetMarket(4, 4)
-	(*b).SetSettlement(5,4)
-	(*b).SetSettlement(6,4)
+	(*b).SetSettlement(5, 4)
+	(*b).SetSettlement(6, 4)
 
 	(*b).SetTile(3, 1, TILE["P1RED"])
+	(*b).SetTile(6, 5, TILE["P2GREEN"])
 }
 
 func (b *Board) SetTile(x, y, thisTile int) {
-		(*b).board[y][x] = thisTile
+	(*b).board[y][x] = thisTile
 }
 
 func (b *Board) SetEmpty(x, y int) {
@@ -136,7 +141,6 @@ func (b *Board) SetSettlement(x, y int) {
 	(*b).board[y][x] = TILE["BLACK"]
 }
 
-
 func (b *Board) IsEmpty(x, y int) bool {
 	if (*b).board[y][x] == TILE["EMPTY"] {
 		return true
@@ -155,8 +159,8 @@ func (b *Board) IsRiver(x, y int) bool {
 
 func (b *Board) IsNeutralTile(x, y int) bool {
 	switch (*b).board[y][x] {
-		case TILE["BLACK"], TILE["BLUE"], TILE["GREEN"], TILE["RED"]:
-			return true
+	case TILE["BLACK"], TILE["BLUE"], TILE["GREEN"], TILE["RED"]:
+		return true
 	default:
 		return false
 	}
@@ -208,52 +212,59 @@ func (b Board) IsLeaderPlaceable(x, y int) bool {
 	return false
 }
 
-func (b Board) GetKingdomInfo(x, y int) []int {	// Get tile total using Flood Fill function
-	var mark[][] bool
-	var total[] int
+func (b Board) GetKingdomInfo(x, y int) KingdomInfo { // Get tile total using Flood Fill function
+	var mark [][]bool
+	var kingdomInfo KingdomInfo
 
-	mark = make([][] bool, YMAX)	// allocating memory for slice of 2D array
+	mark = make([][]bool, YMAX) // allocating memory for slice of 2D array
 	for j := range mark {
 		mark[j] = make([]bool, XMAX)
 	}
 
-	total = make([] int, MAXCOLOR)	// allocating memory for array size 4
+	b.FloodFill(x, y, mark, &kingdomInfo)
 
-	b.FloodFill(x, y, mark, total)
-
-	return total
+	return kingdomInfo
 }
 
-func (b Board) FloodFill(x, y int, mark[][] bool, total []int) {
-	if !inBound(x,y) {	// quit function if not in bound
+func (b Board) FloodFill(x, y int, mark [][]bool, k *KingdomInfo) {
+	if !inBound(x, y) { // quit function if not in bound
 		return
 	}
 
-	if (b.IsNeutralTile(x, y) || b.IsLeader(x, y)) && mark[y][x] == false {	// check connecting neutral & leader tile
+	if (b.IsNeutralTile(x, y) || b.IsLeader(x, y)) && mark[y][x] == false { // check connecting neutral & leader tile
 		mark[y][x] = true
 
 		switch b.board[y][x] {
-			case TILE["BLACK"]: 
-				total[BLACK]++
-			case TILE["BLUE"]:			
-				total[BLUE]++
-			case TILE["GREEN"]:
-				total[GREEN]++
-			case TILE["RED"]:
-				total[RED]++
+		case TILE["BLACK"]:
+			(*k).tileTotal[BLACK]++
+		case TILE["BLUE"]:
+			(*k).tileTotal[BLUE]++
+		case TILE["GREEN"]:
+			(*k).tileTotal[GREEN]++
+		case TILE["RED"]:
+			(*k).tileTotal[RED]++
+
+		case TILE["P1BLACK"], TILE["P2BLACK"], TILE["P3BLACK"], TILE["P4BLACK"]:
+			(*k).leader[BLACK] = b.board[y][x] / 4
+		case TILE["P1BLUE"], TILE["P2BLUE"], TILE["P3BLUE"], TILE["P4BLUE"]:
+			(*k).leader[BLUE] = b.board[y][x] / 4
+		case TILE["P1GREEN"], TILE["P2GREEN"], TILE["P3GREEN"], TILE["P4GREEN"]:
+			(*k).leader[GREEN] = b.board[y][x] / 4
+		case TILE["P1RED"], TILE["P2RED"], TILE["P3RED"], TILE["P4RED"]:
+			(*k).leader[RED] = b.board[y][x] / 4
 		}
 
-		b.FloodFill(x,y+1, mark, total) // up
-		b.FloodFill(x+1,y, mark, total) // right
-		b.FloodFill(x,y-1, mark, total) // down
-		b.FloodFill(x-1,y, mark, total) // left
-	} 
+		b.FloodFill(x, y+1, mark, k) // up
+		b.FloodFill(x+1, y, mark, k) // right
+		b.FloodFill(x, y-1, mark, k) // down
+		b.FloodFill(x-1, y, mark, k) // left
+	}
 }
 
 func (b Board) Print() { // 16 wide x 11 height
 	fmt.Printf("  ")
-	for i := 0 ; i < XMAX; i++ {
-		fmt.Printf("%2c", i+65)	// print Alphabet character from unicode
+	for i := 0; i < XMAX; i++ {
+		fmt.Printf("%2c", i+65) // print Alphabet character from unicode
 	}
 	fmt.Printf("\n")
 	for j := 0; j < YMAX; j++ {
